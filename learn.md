@@ -144,4 +144,5 @@ Rollup 当中不同插件 Hook 的类型，实际上不同的类型是可以叠�
 8. 随后会调用 `generateBundle(Sequential & Async)` 钩子，这个钩子的入参里面会包含所有的打包产物信息，包括 chunk (打包后的代码)、asset(最终的静态资源文件)。你可以在这里删除一些 chunk 或者 asset，最终这些内容将不会作为产物输出
 9. 前面提到了 `rollup.rollup` 方法会返回一个 `bundle` 对象，这个对象是包含 `generate` 和 `write` 两个方法，两个方法唯一的区别在于后者会将代码写入到磁盘中，同时会触发 `writeBundle(Parallel & Async)` 钩子，传入所有的打包产物信息，包括 `chunk` 和 `asset`，和 `generateBundle` 钩子非常相似。不过值得注意的是，这个钩子执行的时候，产物已经输出了，而 `generateBundle` 执行的时候产物还并没有输出 `generateBundle => 输出产物到磁盘 => writeBundle`
 10. 当上述的 bundle 的 close 方法被调用时，会触发 `closeBundle(Parallel & Async)` 钩子，到这里 Output 阶段正式结束
-    > 注意: 当打包过程中任何阶段出现错误，会触发 `renderError(Parallel & Async)` 钩子，然后执行 closeBundle 钩子结束打包。
+
+> 注意: 当打包过程中任何阶段出现错误，会触发 `renderError(Parallel & Async)` 钩子，然后执行 closeBundle 钩子结束打包。
