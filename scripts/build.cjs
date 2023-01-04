@@ -2,6 +2,7 @@ const rollup = require('rollup');
 const typescript = require('@rollup/plugin-typescript');
 const resolve = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
+const util = require('util');
 
 /**
  * 1. 通过 rollup.rollup方法，传入 inputOptions，生成 bundle 对象
@@ -38,6 +39,15 @@ async function build() {
   try {
     // 1. 调用 rollup.rollup 生成 bundle 对象
     bundle = await rollup.rollup(inputOptions);
+    // 打印bundle
+    // console.log(util.inspect(bundle.cache.modules[1].dependencies));
+
+    // 打印generate, generate不会写入磁盘
+    const result = await bundle.generate({
+      format: 'es',
+    });
+    console.log('generate result', result);
+
     for (const outputOptions of outputOptionsList) {
       // 2. 拿到 bundle 对象，根据每一份输出配置，调用 generate 和 write 方法分别生成和写入产物
       const { output } = await bundle.generate(outputOptions);
