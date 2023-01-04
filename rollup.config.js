@@ -29,6 +29,8 @@ const buildOptions = {
     },
   ],
   plugins: [typescript()],
+  // 不想被打包的可以用 external
+  external: ['react', 'react-dom'],
 };
 
 // 我们也可以导出的配置是一个数组, 数组的每一项都是一个rollupOtions 用于应对入口打包的配置不一样的情况
