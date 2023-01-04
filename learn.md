@@ -127,3 +127,21 @@ Rollup 当中不同插件 Hook 的类型，实际上不同的类型是可以叠�
 7. 直到所有的 import 都解析完毕，Rollup 执行 `buildEnd(Parallel & Async)` 钩子，Build 阶段结束
 
 当然，在 Rollup 解析路径的时候，即执行 `resolveId` 或者 `resolveDynamicImport` 的时候，有些路径可能会被标记为 `external(翻译为排除)`，也就是说不参加 Rollup 打包过程，这个时候就不会进行 `load、transform` 等等后续的处理了
+
+### Output 阶段工作流
+
+![output](output.webp)
+
+1. 执行所有插件的 `outputOptions(Sequential & Sync)` 钩子函数，对 output 配置进行转换
+2. 执行 `renderStart(Parallel & Async)`，并发执行 renderStart 钩子，正式开始打包
+3. 并发执行所有插件的 `banner、footer、intro、outro(Parallel & Async)` 钩子(底层用 Promise.all 包裹所有的这四种钩子函数)，这四个钩子功能很简单，就是往打包产物的固定位置(比如头部和尾部)插入一些自定义的内容，比如协议声明内容、项目介绍等等
+4. 从入口模块开始扫描，针对动态 import 语句执行 `renderDynamicImport(First & Sync)` 钩子，来自定义动态 import 的内容
+5. 对每个即将生成的 chunk，执行 `augmentChunkHash(Sequential & Async)` 钩子，来决定是否更改 chunk 的哈希值，在 watch 模式下即可能会多次打包的场景下，这个钩子会比较适用
+6. 如果没有遇到 import.meta 语句，则进入下一步，否则
+   - 6.1 对于 import.meta.url 语句调用 `resolveFileUrl(First & Sync)` 来自定义 url 解析逻辑
+   - 6.2 对于其他 import.meta 属性，则调用 `resolveImportMeta(First & Sync)` 来进行自定义的解析
+7. 接着 Rollup 会生成所有 chunk 的内容，针对每个 chunk 会依次调用插件的 `renderChunk(Sequential & Async)` 方法进行自定义操作，也就是说，在这里时候你可以直接操作打包产物了
+8. 随后会调用 `generateBundle(Sequential & Async)` 钩子，这个钩子的入参里面会包含所有的打包产物信息，包括 chunk (打包后的代码)、asset(最终的静态资源文件)。你可以在这里删除一些 chunk 或者 asset，最终这些内容将不会作为产物输出
+9. 前面提到了 `rollup.rollup` 方法会返回一个 `bundle` 对象，这个对象是包含 `generate` 和 `write` 两个方法，两个方法唯一的区别在于后者会将代码写入到磁盘中，同时会触发 `writeBundle(Parallel & Async)` 钩子，传入所有的打包产物信息，包括 `chunk` 和 `asset`，和 `generateBundle` 钩子非常相似。不过值得注意的是，这个钩子执行的时候，产物已经输出了，而 `generateBundle` 执行的时候产物还并没有输出 `generateBundle => 输出产物到磁盘 => writeBundle`
+10. 当上述的 bundle 的 close 方法被调用时，会触发 `closeBundle(Parallel & Async)` 钩子，到这里 Output 阶段正式结束
+    > 注意: 当打包过程中任何阶段出现错误，会触发 `renderError(Parallel & Async)` 钩子，然后执行 closeBundle 钩子结束打包。
