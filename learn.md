@@ -146,3 +146,25 @@ Rollup 当中不同插件 Hook 的类型，实际上不同的类型是可以叠�
 10. 当上述的 bundle 的 close 方法被调用时，会触发 `closeBundle(Parallel & Async)` 钩子，到这里 Output 阶段正式结束
 
 > 注意: 当打包过程中任何阶段出现错误，会触发 `renderError(Parallel & Async)` 钩子，然后执行 closeBundle 钩子结束打包。
+
+### 常用 hook 实战
+
+`列举的插件, 我后续会单独阅读源码`
+
+1. 路径解析: resolveId
+   [alias 插件](https://github.com/rollup/plugins/blob/master/packages/alias/src/index.ts)
+2. load
+   [image 插件](https://github.com/rollup/plugins/blob/master/packages/image/src/index.js)
+3. 代码转换: transform
+4. Chunk 级代码修改: renderChunk
+   [replace 插件](https://github.com/rollup/plugins/blob/master/packages/replace/src/index.js)
+5. 产物生成最后一步: generateBundle
+   [html 插件](https://github.com/rollup/plugins/blob/master/packages/html/src/index.ts)
+
+### 总结
+
+Rollup 的插件开发整体上是非常简洁和灵活的
+
+- 插件逻辑集中管理。各个阶段的 Hook 都可以放在一个插件中编写，比如上述两个 Webpack 的 Loader 和 Plugin 功能在 Rollup 只需要用一个插件，分别通过 transform 和 renderChunk 两个 Hook 来实现
+- 插件 API 简洁，符合直觉。Rollup 插件基本上只需要返回一个包含 name 和各种钩子函数的对象即可，也就是声明一个 name 属性，然后写几个钩子函数即可
+- 插件间的互相调用。比如刚刚介绍的 alias 插件，可以通过插件上下文对象的 resolve 方法，继续调用其它插件的 resolveId 钩子，类似的还有 load 方法，这就大大增加了插件的灵活性
