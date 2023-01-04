@@ -15,3 +15,9 @@
 - `@rollup/plugin-alias`：支持别名配置。
 - `@rollup/plugin-replace`：在 Rollup 进行变量字符串的替换。
 - `rollup-plugin-visualizer`: 对 Rollup 打包产物进行分析，自动生成产物体积可视化分析图。
+
+## JavaScript API 方式调用
+
+我们通过 Rollup 的配置文件结合 `rollup -c` 完成了 Rollup 的打包过程，但有些场景下我们需要基于 Rollup 定制一些打包过程，配置文件就不够灵活了，这时候我们需要用到对应 JavaScript API 来调用 Rollup，主要分为 `rollup.rollup` 和 `rollup.watch` 两个 API
+
+具体代码在 `scripts` 下面
