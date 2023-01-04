@@ -1,6 +1,7 @@
 import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import { terser } from 'rollup-plugin-terser';
 
 /**
  * @type { import('rollup').RollupOptions }
@@ -24,6 +25,7 @@ const buildOptions = {
     {
       dir: 'dist/es', // 输出目录
       format: 'esm', // 输出格式
+      plugins: [terser()],
     },
     {
       dir: 'dist/cjs',
